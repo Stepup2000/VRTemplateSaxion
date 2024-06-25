@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1256707713823884816}
   - component: {fileID: 778619257913051717}
   - component: {fileID: 7999409506261569702}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SimpleInteractable_Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -196,7 +196,7 @@ GameObject:
   - component: {fileID: 2277024614509170774}
   - component: {fileID: 7897395187058086772}
   - component: {fileID: 4926510575568888569}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Simpleinteractable_Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

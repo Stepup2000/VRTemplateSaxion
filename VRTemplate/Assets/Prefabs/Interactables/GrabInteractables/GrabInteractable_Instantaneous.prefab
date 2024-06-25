@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2515612712242311534}
   - component: {fileID: 1644075511299818683}
   - component: {fileID: 7706519587246743818}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Simpleinteractable_Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 3850008674756677413}
   - component: {fileID: 708285166282870147}
   - component: {fileID: 9051290854117191650}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GrabInteractable_Instantaneous
   m_TagString: Untagged
   m_Icon: {fileID: 0}
