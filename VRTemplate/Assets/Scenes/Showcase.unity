@@ -603,7 +603,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8840604561791296829, guid: 83e7c471c8e034e40918a8cbefdee1b2, type: 3}
       propertyPath: m_Name
-      value: Pillar_2
+      value: Pillar_SelectInteractable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -837,7 +837,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8840604561791296829, guid: 83e7c471c8e034e40918a8cbefdee1b2, type: 3}
       propertyPath: m_Name
-      value: Pillar_4
+      value: Pillar_SimpleInteractableCombined
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -961,7 +961,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8840604561791296829, guid: 83e7c471c8e034e40918a8cbefdee1b2, type: 3}
       propertyPath: m_Name
-      value: Pillar_3
+      value: Pillar_ActivateInteractable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1249,7 +1249,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8840604561791296829, guid: 83e7c471c8e034e40918a8cbefdee1b2, type: 3}
       propertyPath: m_Name
-      value: Pillar_1
+      value: Pillar_Hoverinteractable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
