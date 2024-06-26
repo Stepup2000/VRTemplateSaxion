@@ -29,9 +29,7 @@ public class RefreshrateController : MonoBehaviour
         // Check if the refresh rate is valid
         if (refreshRate > 0)
         {
-            Debug.Log(Time.fixedDeltaTime);
             Time.fixedDeltaTime = 1.0f / refreshRate;
-            Debug.Log(Time.fixedDeltaTime);
             //Debug.Log("XR Device Refresh Rate: " + refreshRate);
             //Debug.Log("Time.fixedDeltaTime set to: " + Time.fixedDeltaTime);
         }
