@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6985926008772231508, guid: 5948d770d13390046bafaf80a6658b6a, type: 3}
       propertyPath: m_Name
-      value: GrabInteractable_Instantaneous Variant
+      value: GrabInteractable_Kinematic
       objectReference: {fileID: 0}
     - target: {fileID: 9051290854117191650, guid: 5948d770d13390046bafaf80a6658b6a, type: 3}
       propertyPath: m_MovementType
