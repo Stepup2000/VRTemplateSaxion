@@ -140,6 +140,7 @@ public class SoundManager : MonoBehaviour
 
         GameObject newAudioSource = new GameObject("AudioSource");
         AudioSource audioSource = newAudioSource.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1;
         audioSourcesPool.Add(audioSource);
         newAudioSource.transform.SetParent(GetAudioSourceContainer().transform);
         newAudioSource.gameObject.SetActive(false);
