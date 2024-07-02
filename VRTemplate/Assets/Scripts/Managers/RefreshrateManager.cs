@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
-public class RefreshrateController : MonoBehaviour
+public class RefreshrateManager : MonoBehaviour
 {
     private void Start()
     {
@@ -14,10 +14,11 @@ public class RefreshrateController : MonoBehaviour
     {
         // Check if XR device is present
         if (XRSettings.isDeviceActive) ChangeDeltaTime();
+        //Else log a warning and try again
         else
         {
             Debug.LogWarning("No XR device is active.");
-            Invoke("AttemptChangeDeltaTime", 0.25f);
+            Invoke(nameof(AttemptChangeDeltaTime), 0.25f);
         }
     }
 
@@ -30,12 +31,12 @@ public class RefreshrateController : MonoBehaviour
         if (refreshRate > 0)
         {
             Time.fixedDeltaTime = 1.0f / refreshRate;
-            //Debug.Log("XR Device Refresh Rate: " + refreshRate);
-            //Debug.Log("Time.fixedDeltaTime set to: " + Time.fixedDeltaTime);
         }
+        //Else log a warning and try again
         else
         {
-            Debug.LogWarning("Invalid XR device refresh rate: ");
+            Debug.LogWarning("Invalid XR device refresh rate: " + refreshRate);
+            Invoke(nameof(AttemptChangeDeltaTime), 0.25f);
         }
     }
 }
