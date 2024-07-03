@@ -41,8 +41,6 @@ public class DataManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
-        CreateNewFile(); // Ensure a new file is created at the start
     }
 
     private void CreateNewFile()
@@ -100,13 +98,15 @@ public class DataManager : MonoBehaviour
             return;
         }
 
+        CreateNewFile();
+
         // Prepare the content to write to CSV
         string content = "";
         content += $"\"{_title}\"\n\n"; // Enclose title in quotes for CSV
 
         foreach (var kvp in subjectsDictionary)
         {
-            content += $"\"Header: {kvp.Key}\",\n"; // Subject name as the key
+            content += $"\"Question: {kvp.Key}\",\n"; // Subject name as the key
 
             foreach (var sentence in kvp.Value)
             {
@@ -136,6 +136,11 @@ public class DataManager : MonoBehaviour
 
         File.AppendAllText(filePath, content);
         Debug.Log("Subjects written to file.");
+    }
+
+    private void OnApplicationQuit()
+    {
+        WriteSubjectsToFile();
     }
 
 }
