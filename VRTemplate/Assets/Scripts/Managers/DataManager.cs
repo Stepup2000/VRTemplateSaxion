@@ -106,7 +106,7 @@ public class DataManager : MonoBehaviour
 
         foreach (var kvp in subjectsDictionary)
         {
-            content += $"\"Question: {kvp.Key}\",\n"; // Subject name as the key
+            content += $"\"Subject: {kvp.Key}\",\n"; // Subject name as the key
 
             foreach (var sentence in kvp.Value)
             {
