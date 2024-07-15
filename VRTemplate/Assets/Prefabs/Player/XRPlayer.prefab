@@ -267,8 +267,9 @@ GameObject:
   - component: {fileID: 978811780446577863}
   - component: {fileID: 1405292388713715522}
   - component: {fileID: 4928414949925396831}
+  - component: {fileID: 4018350052130681447}
   m_Layer: 6
-  m_Name: Player
+  m_Name: XRPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -571,6 +572,20 @@ MonoBehaviour:
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: -6493913391331992944, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+--- !u!114 &4018350052130681447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708924899597527235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2058559b8c4af8048a613a45cc8a55b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeOutTime: 2
+  fpsControllerPrefab: {fileID: 8233030797167078040, guid: 67d099d9a8beb3c44a05f5132ec41759, type: 3}
 --- !u!1 &7736955896066606859
 GameObject:
   m_ObjectHideFlags: 0

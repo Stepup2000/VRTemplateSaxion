@@ -17,7 +17,7 @@ public class RefreshrateManager : MonoBehaviour
         //Else log a warning and try again
         else
         {
-            Debug.LogWarning("No XR device is active.");
+            //Debug.LogWarning("No XR device is active.");
             Invoke(nameof(AttemptChangeDeltaTime), 0.25f);
         }
     }
