@@ -133,7 +133,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3119880267702159816, guid: cb543a70cc0d33845b566704e0f01090, type: 3}
       propertyPath: m_Name
-      value: Controller (1)
+      value: Controller
       objectReference: {fileID: 0}
     - target: {fileID: 8332307146809826836, guid: cb543a70cc0d33845b566704e0f01090, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1920,7 +1920,8 @@ PrefabInstance:
       value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2494714514106887094, guid: 3b29267c222dc204db3aee3b18217ddc, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -4984355194307243778, guid: 3b29267c222dc204db3aee3b18217ddc, type: 3}
