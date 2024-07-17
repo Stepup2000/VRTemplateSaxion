@@ -20,7 +20,7 @@ public class FeedbackQuestion : MonoBehaviour
         float rating = _questionSlider.value;
 
         // Add the subject and rating to the DataManager in the desired format
-        DataManager.Instance.AddSubject(subjectName.ToString(), "This question is marked with a " + rating.ToString());
+        DataManager.Instance.AddSubject(subjectName.ToString(), "This question is marked with a: " + rating.ToString());
         Destroy(gameObject);
     }
 }

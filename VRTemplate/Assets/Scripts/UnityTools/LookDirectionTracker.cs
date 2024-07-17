@@ -54,7 +54,6 @@ public class LookDirectionTracker : MonoBehaviour
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxRayDistance))
         {
             GameObject hitObject = hit.collider.gameObject;
-            Debug.Log(hitObject.name);
 
             // If the looked-at object has changed, update the look times
             if (hitObject != currentLookObject)
