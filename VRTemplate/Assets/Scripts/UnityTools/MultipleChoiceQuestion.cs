@@ -8,7 +8,19 @@ public class MultipleChoiceQuestion : MonoBehaviour
     [SerializeField, Tooltip("The TMP_Text component that displays the question text.")]
     private TMP_Text _questionText; // Text component for the question
 
+    private string _subjectName;
     private string _answer = "Unanswered"; // Tracks the selected answer
+
+    private void Start()
+    {
+        SetSubjectName();
+        DataManager.Instance.AddSubject(_subjectName, "X");
+    }
+
+    private void SetSubjectName()
+    {
+        _subjectName = _questionText != null ? _questionText.text : gameObject.name;
+    }
 
     // Sets the answer based on the text given
     public void SetAnswer(TMP_Text targetText)
@@ -41,11 +53,8 @@ public class MultipleChoiceQuestion : MonoBehaviour
             return;
         }
 
-        // Get the subject name from the question text or fallback to the GameObject name
-        string subjectName = _questionText != null ? _questionText.text : gameObject.name;
-
-        // Add the subject and answer to the DataManager
-        DataManager.Instance.AddSubject(subjectName, $"{_questionText.text} has been answered with: {_answer}");
+        // Replace the subject and answer for the DataManager
+        DataManager.Instance.ReplaceSubject(_subjectName, _answer);
 
         // Destroy the GameObject after processing
         Destroy(gameObject);

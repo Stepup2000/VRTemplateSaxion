@@ -126,4 +126,9 @@ public class LookDirectionTracker : MonoBehaviour
             DataManager.Instance.AddSubject(objectName, "The player has looked at " + objectName + " for " + lookDuration.ToString("F2") + " seconds.");
         }
     }
+
+    private void OnApplicationQuit()
+    {
+        LogTime();
+    }
 }

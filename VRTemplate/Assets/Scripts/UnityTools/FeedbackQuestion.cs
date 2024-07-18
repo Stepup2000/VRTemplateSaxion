@@ -9,6 +9,19 @@ public class FeedbackQuestion : MonoBehaviour
     [SerializeField] private Slider _questionSlider;
     [SerializeField] private TMP_Text _questionText;
 
+    private string _subjectName;
+
+    private void Start()
+    {
+        SetSubjectName();
+        DataManager.Instance.AddSubject(_subjectName, "X");
+    }
+
+    private void SetSubjectName()
+    {
+        _subjectName = _questionText != null ? _questionText.text : gameObject.name;
+    }
+
     public void FinishQuestion()
     {
         if (_questionSlider == null) return;
@@ -20,7 +33,7 @@ public class FeedbackQuestion : MonoBehaviour
         float rating = _questionSlider.value;
 
         // Add the subject and rating to the DataManager in the desired format
-        DataManager.Instance.AddSubject(subjectName.ToString(), "This question is marked with a: " + rating.ToString());
+        DataManager.Instance.ReplaceSubject(subjectName.ToString(), rating.ToString());
         Destroy(gameObject);
     }
 }
