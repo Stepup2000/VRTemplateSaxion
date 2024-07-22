@@ -1,16 +1,16 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class LookDirectionTracker : MonoBehaviour
 {
-    // Maximum distance for the raycast
     [SerializeField, Tooltip("Maximum distance the ray can check for objects.")]
     private float maxRayDistance = 10f;
 
-    // The camera used for raycasting
     [SerializeField, Tooltip("The camera to use for the raycast. Defaults to the first camera found if not assigned.")]
     private Camera playerCamera;
+
+    [SerializeField, Tooltip("Optional layer to only work with that layer.")]
+    private LayerMask _optionalLayer = 1; // Set the -1 as default to include all layers
 
     // Dictionary to store the total look times for each object
     private Dictionary<string, float> lookTimes = new Dictionary<string, float>();
@@ -21,85 +21,101 @@ public class LookDirectionTracker : MonoBehaviour
     // The time when the current look began
     private float lookStartTime;
 
-   
-    void Start()
+    private void Start()
     {
         // Attempt to find the first camera in the scene if none is assigned
-        Camera[] cameras = FindObjectsOfType<Camera>();
-        if (cameras.Length > 0)
+        if (playerCamera == null)
         {
-            playerCamera = cameras[0];
-        }
-        else
-        {
-            Debug.LogError("No camera found in the scene.");
+            Camera[] cameras = FindObjectsOfType<Camera>();
+            if (cameras.Length > 0)
+            {
+                playerCamera = cameras[0];
+            }
+            else
+            {
+                Debug.LogError("No camera found in the scene.");
+            }
         }
     }
 
-    void Update()
+    private void Update()
     {
         // Check if the playerCamera is assigned before tracking look time
         if (playerCamera != null)
         {
             TrackLookTime();
-            // Visualize the ray in the scene view for debugging
+
+            // Visualize the ray in the scene view for debugging purposes
+#if UNITY_EDITOR
             Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxRayDistance, Color.red);
+#endif
         }
     }
 
-    void TrackLookTime()
+    private void TrackLookTime()
     {
+        // Perform the raycast and check if it hits an object
         RaycastHit hit;
-        // Perform a raycast to detect what the camera is looking at
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxRayDistance))
+        bool hitDetected = PerformRaycast(out hit);
+
+        if (hitDetected)
         {
-            GameObject hitObject = hit.collider.gameObject;
-
-            // If the looked-at object has changed, update the look times
-            if (hitObject != currentLookObject)
-            {
-                if (currentLookObject != null)
-                {
-                    // Calculate the look duration for the previous object
-                    float lookDuration = Time.time - lookStartTime;
-                    string objectName = currentLookObject.name;
-
-                    // Update the look time in the dictionary
-                    if (lookTimes.ContainsKey(objectName))
-                    {
-                        lookTimes[objectName] += lookDuration;
-                    }
-                    else
-                    {
-                        lookTimes[objectName] = lookDuration;
-                    }
-                }
-
-                // Update the current looked-at object and start time
-                currentLookObject = hitObject;
-                lookStartTime = Time.time;
-            }
+            // Handle the object that the raycast hit
+            HandleHitObject(hit.collider.gameObject);
         }
         else
         {
-            // If no object is being looked at, update the look time for the last object
-            if (currentLookObject != null)
+            // Handle the case where no object is hit
+            HandleNoHit();
+        }
+    }
+
+    private bool PerformRaycast(out RaycastHit hit)
+    {
+        // Perform the raycast based on whether a layer mask is specified
+        return _optionalLayer == 0
+            ? Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxRayDistance)
+            : Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxRayDistance, _optionalLayer);
+    }
+
+    private void HandleHitObject(GameObject hitObject)
+    {
+        // Check if the object that is currently looked at has changed
+        if (hitObject != currentLookObject)
+        {
+            // Update the look time for the previously looked-at object
+            UpdateLookTimeForCurrentObject();
+
+            // Set the new looked-at object and update the start time
+            currentLookObject = hitObject;
+            lookStartTime = Time.time;
+        }
+    }
+
+    private void HandleNoHit()
+    {
+        // Update the look time for the last looked-at object if no object is currently being looked at
+        UpdateLookTimeForCurrentObject();
+        currentLookObject = null;
+    }
+
+    private void UpdateLookTimeForCurrentObject()
+    {
+        // Update the total look time for the current looked-at object
+        if (currentLookObject != null)
+        {
+            float lookDuration = Time.time - lookStartTime;
+            string objectName = currentLookObject.name;
+
+            if (lookTimes.ContainsKey(objectName))
             {
-                float lookDuration = Time.time - lookStartTime;
-                string objectName = currentLookObject.name;
-
-                // Update the look time in the dictionary
-                if (lookTimes.ContainsKey(objectName))
-                {
-                    lookTimes[objectName] += lookDuration;
-                }
-                else
-                {
-                    lookTimes[objectName] = lookDuration;
-                }
-
-                // Reset current looked-at object
-                currentLookObject = null;
+                // Add the new look duration to the existing time
+                lookTimes[objectName] += lookDuration;
+            }
+            else
+            {
+                // Start tracking the look duration for the new object
+                lookTimes[objectName] = lookDuration;
             }
         }
     }
@@ -107,14 +123,11 @@ public class LookDirectionTracker : MonoBehaviour
     // Method to retrieve the total look time for a given object
     public float GetLookTime(string objectName)
     {
-        if (lookTimes.ContainsKey(objectName))
-        {
-            return lookTimes[objectName];
-        }
-        return 0f; // Return 0 if the object has no recorded look time
+        // Return the look time for the object if it exists, otherwise return 0
+        return lookTimes.TryGetValue(objectName, out float lookDuration) ? lookDuration : 0f;
     }
 
-    // Logs the look times for all objects after 30 seconds
+    // Logs the look times for all objects when the application is quitting
     private void LogTime()
     {
         foreach (var entry in lookTimes)
@@ -123,12 +136,13 @@ public class LookDirectionTracker : MonoBehaviour
             float lookDuration = entry.Value;
 
             // Log the look duration using the DataManager
-            DataManager.Instance.AddSubject(objectName, "The player has looked at " + objectName + " for " + lookDuration.ToString("F2") + " seconds.");
+            DataManager.Instance.AddSubject(objectName, $"{objectName} for {lookDuration:F2} seconds.");
         }
     }
 
     private void OnApplicationQuit()
     {
+        // Log the look times when the application is closing
         LogTime();
     }
 }

@@ -3841,7 +3841,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1183210046774382185, guid: cb543a70cc0d33845b566704e0f01090, type: 3}
       propertyPath: _fileName
-      value: DataForTesting
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1183210046774382185, guid: cb543a70cc0d33845b566704e0f01090, type: 3}
       propertyPath: currentFileName
