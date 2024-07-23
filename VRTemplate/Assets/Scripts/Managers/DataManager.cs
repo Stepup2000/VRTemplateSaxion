@@ -61,6 +61,7 @@ public class DataManager : MonoBehaviour
             {
                 string dateTimeString = DateTime.Now.ToString("dd-MM-yyyy_HHmm");
                 _fileName = $"{dateTimeString}.csv";
+                Debug.LogWarning("No filename for data logging has been given, defaulting to Date + time");
             }
 
             // Ensure the file name ends with .csv
