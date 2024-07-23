@@ -3,13 +3,16 @@ using UnityEngine;
 
 public class LookDirectionTracker : MonoBehaviour
 {
-    [SerializeField, Tooltip("Maximum distance the ray can check for objects.")]
+    [SerializeField]
+    [Tooltip("Maximum distance the ray can check for objects.")]
     private float maxRayDistance = 10f;
 
-    [SerializeField, Tooltip("The camera to use for the raycast. Defaults to the first camera found if not assigned.")]
+    [SerializeField]
+    [Tooltip("The camera to use for the raycast. Defaults to the first camera found if not assigned.")]
     private Camera playerCamera;
 
-    [SerializeField, Tooltip("Optional layer to only work with that layer.")]
+    [SerializeField]
+    [Tooltip("Optional layer to only work with that layer.")]
     private LayerMask _optionalLayer = 1; // Set the -1 as default to include all layers
 
     // Dictionary to store the total look times for each object

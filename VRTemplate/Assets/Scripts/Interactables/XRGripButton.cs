@@ -1,39 +1,40 @@
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace UnityEngine.XR.Content.Interaction
 {
     /// <summary>
-    /// An interactable that can be pressed by a direct interactor
+    /// An interactable button that can be pressed by a direct interactor in VR.
     /// </summary>
     public class XRGripButton : XRBaseInteractable
     {
         [SerializeField]
-        [Tooltip("The object that is visually pressed down")]
-        Transform m_Button = null;
+        [Tooltip("The object that visually represents the button being pressed.")]
+        private Transform m_Button = null; // The visual representation of the button
 
         [SerializeField]
-        [Tooltip("The distance the button can be pressed")]
-        float m_PressDistance = 0.1f;
+        [Tooltip("The distance the button can be pressed.")]
+        private float m_PressDistance = 0.1f; // Maximum distance the button can be pressed down
 
         [SerializeField]
-        [Tooltip("Treat this button like an on/off toggle")]
-        bool m_ToggleButton = false;
+        [Tooltip("Treat this button like an on/off toggle.")]
+        private bool m_ToggleButton = false; // Whether the button should act as a toggle (on/off)
 
         [SerializeField]
-        [Tooltip("Events to trigger when the button is pressed")]
-        UnityEvent m_OnPress;
+        [Tooltip("Events to trigger when the button is pressed.")]
+        private UnityEvent m_OnPress; // Event triggered when the button is pressed
 
         [SerializeField]
-        [Tooltip("Events to trigger when the button is released")]
-        UnityEvent m_OnRelease;
+        [Tooltip("Events to trigger when the button is released.")]
+        private UnityEvent m_OnRelease; // Event triggered when the button is released
 
-        bool m_Hovered = false;
-        bool m_Selected = false;
-        bool m_Toggled = false;
+        private bool m_Hovered = false; // Whether the button is currently hovered over
+        private bool m_Selected = false; // Whether the button is currently selected (pressed)
+        private bool m_Toggled = false; // Whether the button is currently toggled on
 
         /// <summary>
-        /// The object that is visually pressed down
+        /// The object that visually represents the button being pressed.
         /// </summary>
         public Transform button
         {
@@ -42,7 +43,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// The distance the button can be pressed
+        /// The distance the button can be pressed.
         /// </summary>
         public float pressDistance
         {
@@ -51,17 +52,18 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// Events to trigger when the button is pressed
+        /// Events to trigger when the button is pressed.
         /// </summary>
         public UnityEvent onPress => m_OnPress;
 
         /// <summary>
-        /// Events to trigger when the button is released
+        /// Events to trigger when the button is released.
         /// </summary>
         public UnityEvent onRelease => m_OnRelease;
 
-        void Start()
+        private void Start()
         {
+            // Initialize the button's position to its default state
             SetButtonHeight(0.0f);
         }
 
@@ -69,6 +71,7 @@ namespace UnityEngine.XR.Content.Interaction
         {
             base.OnEnable();
 
+            // Add listeners based on whether the button is a toggle or not
             if (m_ToggleButton)
                 selectEntered.AddListener(StartTogglePress);
             else
@@ -82,6 +85,7 @@ namespace UnityEngine.XR.Content.Interaction
 
         protected override void OnDisable()
         {
+            // Remove listeners when the button is disabled
             if (m_ToggleButton)
                 selectEntered.RemoveListener(StartTogglePress);
             else
@@ -94,8 +98,9 @@ namespace UnityEngine.XR.Content.Interaction
             }
         }
 
-        void StartTogglePress(SelectEnterEventArgs args)
+        private void StartTogglePress(SelectEnterEventArgs args)
         {
+            // Toggle the button state and invoke the appropriate event
             m_Toggled = !m_Toggled;
 
             if (m_Toggled)
@@ -110,15 +115,17 @@ namespace UnityEngine.XR.Content.Interaction
             }
         }
 
-        void StartPress(SelectEnterEventArgs args)
+        private void StartPress(SelectEnterEventArgs args)
         {
+            // Handle the start of a button press
             SetButtonHeight(-m_PressDistance);
             m_OnPress.Invoke();
             m_Selected = true;
         }
 
-        void EndPress(SelectExitEventArgs args)
+        private void EndPress(SelectExitEventArgs args)
         {
+            // Handle the end of a button press
             if (m_Hovered)
                 m_OnRelease.Invoke();
 
@@ -126,21 +133,24 @@ namespace UnityEngine.XR.Content.Interaction
             m_Selected = false;
         }
 
-        void StartHover(HoverEnterEventArgs args)
+        private void StartHover(HoverEnterEventArgs args)
         {
+            // Handle the start of a button hover
             m_Hovered = true;
             if (m_Selected)
                 SetButtonHeight(-m_PressDistance);
         }
 
-        void EndHover(HoverExitEventArgs args)
+        private void EndHover(HoverExitEventArgs args)
         {
+            // Handle the end of a button hover
             m_Hovered = false;
             SetButtonHeight(0.0f);
         }
 
-        void SetButtonHeight(float height)
+        private void SetButtonHeight(float height)
         {
+            // Update the vertical position of the button to simulate pressing
             if (m_Button == null)
                 return;
 
@@ -149,8 +159,9 @@ namespace UnityEngine.XR.Content.Interaction
             m_Button.localPosition = newPosition;
         }
 
-        void OnDrawGizmosSelected()
+        private void OnDrawGizmosSelected()
         {
+            // Visualize the button press distance in the Scene view
             var pressStartPoint = transform.position;
             var pressDownDirection = -transform.up;
 
@@ -164,8 +175,9 @@ namespace UnityEngine.XR.Content.Interaction
             Gizmos.DrawLine(pressStartPoint, pressStartPoint + (pressDownDirection * m_PressDistance));
         }
 
-        void OnValidate()
+        private void OnValidate()
         {
+            // Ensure button height is reset when values are validated in the editor
             SetButtonHeight(0.0f);
         }
     }

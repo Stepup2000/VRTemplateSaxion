@@ -6,12 +6,21 @@ using UnityEngine;
 
 public class DataManager : MonoBehaviour
 {
-    [SerializeField] private string _fileName; // The name of the current file to write data to
-    private static DataManager instance; // Singleton instance of DataManager
-    private Dictionary<string, List<string>> subjectsDictionary = new Dictionary<string, List<string>>(); // Dictionary to hold subjects and their sentences
+    [SerializeField]
+    [Tooltip("The name of the file to write data to. If empty, a default name will be generated.")]
+    private string _fileName; // The name of the current file to write data to
 
-    [SerializeField] private string _title = "PlaytestData"; // Title for the CSV file
-    [SerializeField] private string _folderName = "PlaytestData"; // Folder name to store the CSV files
+    private static DataManager instance; // Singleton instance of DataManager
+
+    [SerializeField]
+    [Tooltip("Title for the CSV file. This will be the header of the CSV file.")]
+    private string _title = "PlaytestData"; // Title for the CSV file
+
+    [SerializeField]
+    [Tooltip("Folder name where CSV files will be stored.")]
+    private string _folderName = "PlaytestData"; // Folder name to store the CSV files
+
+    private Dictionary<string, List<string>> subjectsDictionary = new Dictionary<string, List<string>>(); // Dictionary to hold subjects and their sentences
 
     private void Awake()
     {
@@ -27,7 +36,9 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Public static instance property to access the singleton instance
+    /// <summary>
+    /// Public static instance property to access the singleton instance.
+    /// </summary>
     public static DataManager Instance
     {
         get
@@ -45,18 +56,22 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Method to sort subjects dictionary alphabetically by keys
+    /// <summary>
+    /// Sorts the subjects dictionary alphabetically by keys.
+    /// </summary>
     private void SortSubjectsDictionary()
     {
         subjectsDictionary = subjectsDictionary.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
     }
 
-    // Method to create a new file
+    /// <summary>
+    /// Tries to create a new file with the specified or default file name.
+    /// </summary>
     private void TryCreateNewFile()
     {
         try
         {
-            // Check if currentFileName is null or empty, and generate a new file name if needed
+            // Check if _fileName is null or empty, and generate a new file name if needed
             if (string.IsNullOrEmpty(_fileName))
             {
                 string dateTimeString = DateTime.Now.ToString("dd-MM-yyyy_HHmm");
@@ -83,7 +98,7 @@ public class DataManager : MonoBehaviour
             // Combine the full file path including the folder
             string filePath = Path.Combine(directoryPath, _fileName);
 
-            // If the file already exists, do not change the currentFileName
+            // If the file already exists, do not change the _fileName
             if (File.Exists(filePath))
             {
                 Debug.Log($"File '{_fileName}' already exists. Using existing file at: {filePath}");
@@ -101,8 +116,10 @@ public class DataManager : MonoBehaviour
         }
     }
 
-
-    // Method to write title and subjects to the file
+    /// <summary>
+    /// Writes the title and subjects to the specified file path.
+    /// </summary>
+    /// <param name="filePath">The full path of the file to write to.</param>
     private void WriteTitleAndSubjects(string filePath)
     {
         try
@@ -128,7 +145,11 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Method to add information about a subject to the dictionary
+    /// <summary>
+    /// Adds a new sentence to the specified subject in the dictionary.
+    /// </summary>
+    /// <param name="subjectName">The name of the subject.</param>
+    /// <param name="sentence">The sentence to add.</param>
     public void AddSubject(string subjectName, string sentence)
     {
         if (!subjectsDictionary.ContainsKey(subjectName))
@@ -138,7 +159,11 @@ public class DataManager : MonoBehaviour
         subjectsDictionary[subjectName].Add(sentence);
     }
 
-    // Method to replace information about a subject in the dictionary
+    /// <summary>
+    /// Replaces the sentences for a specified subject with a new sentence.
+    /// </summary>
+    /// <param name="subjectName">The name of the subject.</param>
+    /// <param name="sentence">The new sentence to set.</param>
     public void ReplaceSubject(string subjectName, string sentence)
     {
         if (subjectsDictionary.ContainsKey(subjectName))
@@ -151,7 +176,9 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Method to write all subjects to the file
+    /// <summary>
+    /// Writes all subjects and their sentences to the file.
+    /// </summary>
     public void WriteSubjectsToFile()
     {
         if (subjectsDictionary.Count == 0)
@@ -160,10 +187,10 @@ public class DataManager : MonoBehaviour
             return;
         }
 
-        //Sort the subjects alphabetically
+        // Sort the subjects alphabetically
         SortSubjectsDictionary();
 
-        //Try creating a new file or use an existing one
+        // Try creating a new file or use an existing one
         TryCreateNewFile();
 
         try
@@ -212,7 +239,9 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Method called when the application quits
+    /// <summary>
+    /// Called when the application quits to ensure all subjects are written to the file.
+    /// </summary>
     private void OnApplicationQuit()
     {
         WriteSubjectsToFile();

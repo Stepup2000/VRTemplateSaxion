@@ -7,21 +7,31 @@ using UnityEditor;
 
 public class TeleportOnTrigger : MonoBehaviour
 {
+    // The target position to teleport the player to
     [Tooltip("Target position to teleport the player.")]
-    [SerializeField] private Transform _teleportPosition;
+    [SerializeField]
+    private Transform _teleportPosition;
 
+    // Cooldown time in seconds before the player can be teleported again
     [Tooltip("Cooldown time before the player can be teleported again.")]
-    [SerializeField] private float _teleportCooldown = 1f;
+    [SerializeField]
+    private float _teleportCooldown = 1f;
 
+    // Optional tag to filter which objects can trigger the teleport
     [Tooltip("Optional tag to only work with that tag")]
-    [SerializeField] private string _optionalTag;
+    [SerializeField]
+    private string _optionalTag;
 
+    // Flag to manage whether teleportation is allowed or not
     private bool _canTeleport = true;
 
-    // Called when the script instance is being loaded
+    /// <summary>
+    /// Called when the script instance is being loaded.
+    /// Checks if the teleport position is assigned. If not, it destroys the GameObject.
+    /// </summary>
     private void Awake()
     {
-        // Check if teleport position is assigned
+        // Ensure the teleport position is assigned
         if (_teleportPosition == null)
         {
             Debug.LogWarning("Teleport position is not assigned. Destroying game object.");
@@ -29,27 +39,35 @@ public class TeleportOnTrigger : MonoBehaviour
         }
     }
 
-    // Called when another collider enters the trigger collider attached to this object
+    /// <summary>
+    /// Called when another collider enters the trigger collider attached to this object.
+    /// Teleports the player if conditions are met and starts the cooldown routine.
+    /// </summary>
+    /// <param name="other">The collider that entered the trigger.</param>
     private void OnTriggerEnter(Collider other)
     {
-        // Return if teleportation is on cooldown
+        // Check if teleportation is on cooldown
         if (!_canTeleport) return;
 
-        // Determine the tag to check against
+        // Determine if the collider's tag matches the optional tag (if specified)
         bool shouldTeleport = string.IsNullOrEmpty(_optionalTag) || other.CompareTag(_optionalTag);
 
         if (shouldTeleport)
         {
+            // Teleport the player to the specified location
             TeleportPlayerToLocation(other.gameObject);
+            // Start the cooldown routine
             StartCoroutine(TeleportCooldownRoutine());
         }
-
     }
 
-    // Teleport the target object to the teleport position
+    /// <summary>
+    /// Teleports the target object to the teleport position.
+    /// </summary>
+    /// <param name="targetObject">The GameObject to be teleported.</param>
     private void TeleportPlayerToLocation(GameObject targetObject)
     {
-        // Try to get the Rigidbody component of the target object
+        // Attempt to get the Rigidbody component for physics-based teleportation
         if (targetObject.TryGetComponent<Rigidbody>(out Rigidbody targetRB))
         {
             // Use Rigidbody to move the player to avoid physics issues
@@ -57,34 +75,39 @@ public class TeleportOnTrigger : MonoBehaviour
         }
         else
         {
-            // Fallback to directly setting the transform position
+            // Fallback to directly setting the transform position if Rigidbody is not present
             targetObject.transform.position = _teleportPosition.position;
         }
     }
 
-    // Coroutine to handle the teleport cooldown
+    /// <summary>
+    /// Coroutine to handle the teleport cooldown.
+    /// Disables teleportation, waits for the cooldown period, and then re-enables teleportation.
+    /// </summary>
     private IEnumerator TeleportCooldownRoutine()
     {
-        // Disable teleportation
+        // Disable further teleportation
         _canTeleport = false;
-        // Wait for the cooldown duration
+        // Wait for the specified cooldown period
         yield return new WaitForSeconds(_teleportCooldown);
-        // Enable teleportation
+        // Re-enable teleportation
         _canTeleport = true;
     }
 }
 
 #if UNITY_EDITOR
-// Custom property drawer to display a dropdown of all tags in Unity editor
+// Custom property drawer to display a dropdown of all tags in the Unity editor
 [CustomEditor(typeof(TeleportOnTrigger))]
 public class TeleportOnTriggerEditor : Editor
 {
+    // Serialized properties to link with the editor fields
     SerializedProperty _teleportPositionProp;
     SerializedProperty _teleportCooldownProp;
     SerializedProperty _tagReplacementProp;
 
     private void OnEnable()
     {
+        // Initialize the serialized properties
         _teleportPositionProp = serializedObject.FindProperty("_teleportPosition");
         _teleportCooldownProp = serializedObject.FindProperty("_teleportCooldown");
         _tagReplacementProp = serializedObject.FindProperty("_optionalTag");
@@ -92,12 +115,15 @@ public class TeleportOnTriggerEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        // Update the serialized object
         serializedObject.Update();
 
+        // Draw the properties in the inspector
         EditorGUILayout.PropertyField(_teleportPositionProp);
         EditorGUILayout.PropertyField(_teleportCooldownProp);
         _tagReplacementProp.stringValue = EditorGUILayout.TagField("Optional Tag", _tagReplacementProp.stringValue);
 
+        // Apply modified properties to the serialized object
         serializedObject.ApplyModifiedProperties();
     }
 }

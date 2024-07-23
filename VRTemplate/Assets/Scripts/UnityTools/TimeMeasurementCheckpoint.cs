@@ -11,15 +11,19 @@ public class TimeMeasurementCheckpoint : MonoBehaviour
 {
     // Cooldown time in seconds to prevent immediate retriggering of the checkpoint
     [Tooltip("Cooldown time in seconds to prevent immediate retriggering.")]
-    [SerializeField] [Range(0.1f, 60)] private float _checkpointCooldown = 1f;
+    [SerializeField]
+    [Range(0.1f, 60)]
+    private float _checkpointCooldown = 1f;
 
     // Optional name for the checkpoint, can be set in the inspector, otherwise defaulting to the name of the gameobject
     [Tooltip("Optional name for the checkpoint, otherwise defaulting to the name of the gameobject.")]
-    [SerializeField] private string _optionalName;
+    [SerializeField]
+    private string _optionalName;
 
     // Optional tag to restrict which objects can trigger the checkpoint
     [Tooltip("Optional tag to only work with that tag.")]
-    [SerializeField] private string _optionalTag;
+    [SerializeField]
+    private string _optionalTag;
 
     // Flag to indicate if the checkpoint is on cooldown
     private bool _onCooldown = false;
@@ -53,11 +57,13 @@ public class TimeMeasurementCheckpoint : MonoBehaviour
     // Method to log the current time with an optional name for the checkpoint
     private void LogTime()
     {
+        /*
         // Create a message with the checkpoint name and current time
         string message = $"Checkpoint {GetSubjectName()} got triggered at {GetCurrentTime()}";
+        */
 
         // Log the message to the DataManager
-        DataManager.Instance.AddSubject(GetSubjectName(), message);
+        DataManager.Instance.AddSubject(GetSubjectName(), GetCurrentTime());
     }
 
     // Helper method to get the checkpoint name, using the optional name if provided

@@ -6,65 +6,72 @@ using UnityEngine.XR.Interaction.Toolkit;
 namespace UnityEngine.XR.Content.Interaction
 {
     /// <summary>
-    /// An interactable that can be pushed by a direct interactor's movement
+    /// An interactable button that can be pressed by a direct interactor's movement.
+    /// Supports toggle functionality and can trigger events on press and release.
     /// </summary>
     public class XRPushButton : XRBaseInteractable
     {
+        /// <summary>
+        /// Stores information about each interactor interacting with the button.
+        /// </summary>
         class PressInfo
         {
-            internal IXRHoverInteractor m_Interactor;
-            internal bool m_InPressRegion = false;
-            internal bool m_WrongSide = false;
+            internal IXRHoverInteractor m_Interactor; // Reference to the interactor
+            internal bool m_InPressRegion = false; // Indicates if the interactor is within the press region
+            internal bool m_WrongSide = false; // Indicates if the interactor is on the wrong side of the button
         }
 
+        /// <summary>
+        /// Event triggered when the button's press value changes.
+        /// </summary>
         [Serializable]
         public class ValueChangeEvent : UnityEvent<float> { }
 
         [SerializeField]
         [Tooltip("The object that is visually pressed down")]
-        Transform m_Button = null;
+        private Transform m_Button = null; // The visual representation of the button being pressed
 
         [SerializeField]
         [Tooltip("The distance the button can be pressed")]
-        float m_PressDistance = 0.1f;
+        private float m_PressDistance = 0.1f; // Maximum distance the button can be pressed down
 
         [SerializeField]
         [Tooltip("Extra distance for clicking the button down")]
-        float m_PressBuffer = 0.01f;
+        private float m_PressBuffer = 0.01f; // Additional buffer distance for button press
 
         [SerializeField]
         [Tooltip("Offset from the button base to start testing for push")]
-        float m_ButtonOffset = 0.0f;
+        private float m_ButtonOffset = 0.0f; // Offset to account for the initial button position
 
         [SerializeField]
         [Tooltip("How big of a surface area is available for pressing the button")]
-        float m_ButtonSize = 0.1f;
+        private float m_ButtonSize = 0.1f; // Size of the area that can be pressed on the button
 
         [SerializeField]
         [Tooltip("Treat this button like an on/off toggle")]
-        bool m_ToggleButton = false;
+        private bool m_ToggleButton = false; // Whether the button behaves like a toggle switch
 
         [SerializeField]
         [Tooltip("Events to trigger when the button is pressed")]
-        UnityEvent m_OnPress;
+        private UnityEvent m_OnPress; // Event triggered when the button is pressed
 
         [SerializeField]
         [Tooltip("Events to trigger when the button is released")]
-        UnityEvent m_OnRelease;
+        private UnityEvent m_OnRelease; // Event triggered when the button is released
 
         [SerializeField]
         [Tooltip("Events to trigger when the button pressed value is updated. Only called when the button is pressed")]
-        ValueChangeEvent m_OnValueChange;
+        private ValueChangeEvent m_OnValueChange; // Event triggered when the button's value changes
 
-        bool m_Pressed = false;
-        bool m_Toggled = false;
-        float m_Value = 0f;
-        Vector3 m_BaseButtonPosition = Vector3.zero;
+        private bool m_Pressed = false; // Indicates if the button is currently pressed
+        private bool m_Toggled = false; // Indicates if the button is currently in the toggle state
+        private float m_Value = 0f; // Current value of the button press, from 0 to 1
+        private Vector3 m_BaseButtonPosition = Vector3.zero; // Initial position of the button
 
-        Dictionary<IXRHoverInteractor, PressInfo> m_HoveringInteractors = new Dictionary<IXRHoverInteractor, PressInfo>();
+        private Dictionary<IXRHoverInteractor, PressInfo> m_HoveringInteractors = new Dictionary<IXRHoverInteractor, PressInfo>(); // Tracks interactors hovering over the button
 
         /// <summary>
-        /// The object that is visually pressed down
+        /// The object that is visually pressed down.
         /// </summary>
         public Transform button
         {
@@ -73,7 +80,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// The distance the button can be pressed
+        /// The distance the button can be pressed.
         /// </summary>
         public float pressDistance
         {
@@ -82,27 +89,27 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// The distance (in percentage from 0 to 1) the button is currently being held down
+        /// The distance (in percentage from 0 to 1) the button is currently being held down.
         /// </summary>
         public float value => m_Value;
 
         /// <summary>
-        /// Events to trigger when the button is pressed
+        /// Events to trigger when the button is pressed.
         /// </summary>
         public UnityEvent onPress => m_OnPress;
 
         /// <summary>
-        /// Events to trigger when the button is released
+        /// Events to trigger when the button is released.
         /// </summary>
         public UnityEvent onRelease => m_OnRelease;
 
         /// <summary>
-        /// Events to trigger when the button distance value is changed. Only called when the button is pressed
+        /// Events to trigger when the button distance value is changed. Only called when the button is pressed.
         /// </summary>
         public ValueChangeEvent onValueChange => m_OnValueChange;
 
         /// <summary>
-        /// Whether or not a toggle button is in the locked down position
+        /// Whether or not a toggle button is in the locked down position.
         /// </summary>
         public bool toggleValue
         {
@@ -120,8 +127,14 @@ namespace UnityEngine.XR.Content.Interaction
             }
         }
 
+        /// <summary>
+        /// Determines if the button can be hovered over by the given interactor.
+        /// </summary>
+        /// <param name="interactor">The interactor to check.</param>
+        /// <returns>True if the interactor can hover over the button; otherwise, false.</returns>
         public override bool IsHoverableBy(IXRHoverInteractor interactor)
         {
+            // Disallow hovering by XRRayInteractor (e.g., laser pointers)
             if (interactor is XRRayInteractor)
                 return false;
 
@@ -130,6 +143,7 @@ namespace UnityEngine.XR.Content.Interaction
 
         void Start()
         {
+            // Store the initial position of the button
             if (m_Button != null)
                 m_BaseButtonPosition = m_Button.position;
         }
@@ -138,31 +152,43 @@ namespace UnityEngine.XR.Content.Interaction
         {
             base.OnEnable();
 
+            // Set the button height based on the toggle state
             if (m_Toggled)
                 SetButtonHeight(-m_PressDistance);
             else
                 SetButtonHeight(0.0f);
 
+            // Add listeners for hover events
             hoverEntered.AddListener(StartHover);
             hoverExited.AddListener(EndHover);
         }
 
         protected override void OnDisable()
         {
+            // Remove listeners for hover events
             hoverEntered.RemoveListener(StartHover);
             hoverExited.RemoveListener(EndHover);
             base.OnDisable();
         }
 
+        /// <summary>
+        /// Handles the start of hover interaction by adding the interactor to the list.
+        /// </summary>
+        /// <param name="args">Event arguments containing the interactor.</param>
         void StartHover(HoverEnterEventArgs args)
         {
             m_HoveringInteractors.Add(args.interactorObject, new PressInfo { m_Interactor = args.interactorObject });
         }
 
+        /// <summary>
+        /// Handles the end of hover interaction by removing the interactor from the list.
+        /// </summary>
+        /// <param name="args">Event arguments containing the interactor.</param>
         void EndHover(HoverExitEventArgs args)
         {
             m_HoveringInteractors.Remove(args.interactorObject);
 
+            // Reset button height if no interactors are hovering
             if (m_HoveringInteractors.Count == 0)
             {
                 if (m_ToggleButton && m_Toggled)
@@ -176,6 +202,7 @@ namespace UnityEngine.XR.Content.Interaction
         {
             base.ProcessInteractable(updatePhase);
 
+            // Update the button press state during the dynamic update phase
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
             {
                 if (m_HoveringInteractors.Count > 0)
@@ -185,20 +212,25 @@ namespace UnityEngine.XR.Content.Interaction
             }
         }
 
+        /// <summary>
+        /// Updates the button press state based on the interactors' positions.
+        /// </summary>
         void UpdatePress()
         {
-            var minimumHeight = 0.0f;
+            float minimumHeight = 0.0f;
 
+            // Set minimum height based on toggle state
             if (m_ToggleButton && m_Toggled)
                 minimumHeight = -m_PressDistance;
 
-            // Go through each interactor
+            // Process each interactor to determine press height
             foreach (var pressInfo in m_HoveringInteractors.Values)
             {
                 var interactorTransform = pressInfo.m_Interactor.GetAttachTransform(this);
                 var localOffset = transform.InverseTransformVector(interactorTransform.position - m_BaseButtonPosition);
 
-                var withinButtonRegion = (Mathf.Abs(localOffset.x) < m_ButtonSize && Mathf.Abs(localOffset.z) < m_ButtonSize);
+                // Check if the interactor is within the button region
+                bool withinButtonRegion = (Mathf.Abs(localOffset.x) < m_ButtonSize && Mathf.Abs(localOffset.z) < m_ButtonSize);
                 if (withinButtonRegion)
                 {
                     if (!pressInfo.m_InPressRegion)
@@ -213,12 +245,13 @@ namespace UnityEngine.XR.Content.Interaction
                 pressInfo.m_InPressRegion = withinButtonRegion;
             }
 
+            // Apply the press buffer to the minimum height
             minimumHeight = Mathf.Max(minimumHeight, -(m_PressDistance + m_PressBuffer));
 
-            // If button height goes below certain amount, enter press mode
-            var pressed = m_ToggleButton ? (minimumHeight <= -(m_PressDistance + m_PressBuffer)) : (minimumHeight < -m_PressDistance);
+            // Determine if the button is pressed based on height
+            bool pressed = m_ToggleButton ? (minimumHeight <= -(m_PressDistance + m_PressBuffer)) : (minimumHeight < -m_PressDistance);
 
-            var currentDistance = Mathf.Max(0f, -minimumHeight - m_PressBuffer);
+            float currentDistance = Mathf.Max(0f, -minimumHeight - m_PressBuffer);
             m_Value = currentDistance / m_PressDistance;
 
             if (m_ToggleButton)
@@ -251,17 +284,22 @@ namespace UnityEngine.XR.Content.Interaction
             }
             m_Pressed = pressed;
 
-            // Call value change event
+            // Call the value change event if the button is pressed
             if (m_Pressed)
                 m_OnValueChange.Invoke(m_Value);
 
+            // Set the button height based on the calculated minimum height
             SetButtonHeight(minimumHeight);
         }
 
+        /// <summary>
+        /// Sets the height of the button.
+        /// </summary>
+        /// <param name="height">The height to set.</param>
         void SetButtonHeight(float height)
         {
             if (m_Button == null)
-                return;
+                return; // Return early if the button is not set
 
             Vector3 newPosition = m_Button.localPosition;
             newPosition.y = height;
@@ -270,7 +308,8 @@ namespace UnityEngine.XR.Content.Interaction
 
         void OnDrawGizmosSelected()
         {
-            var pressStartPoint = Vector3.zero;
+            // Draw a wireframe cube representing the button press area in the Scene view
+            Vector3 pressStartPoint = Vector3.zero;
 
             if (m_Button != null)
             {
@@ -286,6 +325,7 @@ namespace UnityEngine.XR.Content.Interaction
 
         void OnValidate()
         {
+            // Update the button height when values are changed in the Inspector
             SetButtonHeight(0.0f);
         }
     }

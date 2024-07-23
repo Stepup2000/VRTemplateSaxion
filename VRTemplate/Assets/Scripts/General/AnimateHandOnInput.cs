@@ -4,42 +4,48 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Animator))]
 public class AnimateHand : MonoBehaviour
 {
-    // References to InputActions for grip and trigger inputs
-    public InputActionReference gripInputActionReference;
-    public InputActionReference triggerInputActionReference;
+    [Tooltip("Reference to the InputAction for grip input.")]
+    public InputActionReference gripInputActionReference; // Reference to the InputAction for grip input
 
-    private Animator _handAnimator; // Reference to the Animator component
-    private float _gripValue; // Current grip input value
-    private float _triggerValue; // Current trigger input value
+    [Tooltip("Reference to the InputAction for trigger input.")]
+    public InputActionReference triggerInputActionReference; // Reference to the InputAction for trigger input
+
+    private Animator _handAnimator; // Reference to the Animator component responsible for hand animations
+    private float _gripValue; // Current value of the grip input
+    private float _triggerValue; // Current value of the trigger input
 
     private void Start()
     {
-        // Fetching the Animator component on startup
+        // Initialize the Animator component from the attached GameObject
         _handAnimator = GetComponent<Animator>();
     }
 
     private void Update()
     {
-        // Update the grip and trigger animations every frame
+        // Update grip and trigger animations based on input values every frame
         AnimateGrip();
         AnimateTrigger();
     }
 
-    // Function to animate grip based on input
+    /// <summary>
+    /// Updates the grip animation based on the current grip input value.
+    /// </summary>
     private void AnimateGrip()
     {
-        // Reading grip input value using InputActionReference
+        // Read the current value of the grip input
         _gripValue = gripInputActionReference.action.ReadValue<float>();
-        // Setting the grip animation parameter in the Animator
+        // Set the Animator parameter for grip animation to the current grip value
         _handAnimator.SetFloat("Grip", _gripValue);
     }
 
-    // Function to animate trigger based on input
+    /// <summary>
+    /// Updates the trigger animation based on the current trigger input value.
+    /// </summary>
     private void AnimateTrigger()
     {
-        // Reading trigger input value using InputActionReference
+        // Read the current value of the trigger input
         _triggerValue = triggerInputActionReference.action.ReadValue<float>();
-        // Setting the trigger animation parameter in the Animator
+        // Set the Animator parameter for trigger animation to the current trigger value
         _handAnimator.SetFloat("Trigger", _triggerValue);
     }
 }

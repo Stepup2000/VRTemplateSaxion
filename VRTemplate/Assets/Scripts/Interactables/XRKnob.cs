@@ -1,43 +1,44 @@
 using System;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace UnityEngine.XR.Content.Interaction
 {
     /// <summary>
-    /// An interactable knob that follows the rotation of the interactor
+    /// An interactable knob that follows the rotation of the interactor.
     /// </summary>
     public class XRKnob : XRBaseInteractable
     {
-        const float k_ModeSwitchDeadZone = 0.1f; // Prevents rapid switching between the different rotation tracking modes
+        const float k_ModeSwitchDeadZone = 0.1f; // Dead zone to prevent rapid switching between rotation modes
 
         /// <summary>
-        /// Helper class used to track rotations that can go beyond 180 degrees while minimizing accumulation error
+        /// Helper class used to track rotations that can go beyond 180 degrees while minimizing accumulation error.
         /// </summary>
         struct TrackedRotation
         {
             /// <summary>
-            /// The anchor rotation we calculate an offset from
+            /// The anchor rotation used to calculate an offset from.
             /// </summary>
             float m_BaseAngle;
 
             /// <summary>
-            /// The target rotate we calculate the offset to
+            /// The target rotation angle we calculate the offset to.
             /// </summary>
             float m_CurrentOffset;
 
             /// <summary>
-            /// Any previous offsets we've added in
+            /// Any previous offsets that have been accumulated.
             /// </summary>
             float m_AccumulatedAngle;
 
             /// <summary>
-            /// The total rotation that occurred from when this rotation started being tracked
+            /// The total rotation that occurred from when tracking started.
             /// </summary>
             public float totalOffset => m_AccumulatedAngle + m_CurrentOffset;
 
             /// <summary>
-            /// Resets the tracked rotation so that total offset returns 0
+            /// Resets the tracked rotation so that the total offset returns to 0.
             /// </summary>
             public void Reset()
             {
@@ -47,28 +48,32 @@ namespace UnityEngine.XR.Content.Interaction
             }
 
             /// <summary>
-            /// Sets a new anchor rotation while maintaining any previously accumulated offset
+            /// Sets a new anchor rotation while maintaining any previously accumulated offset.
             /// </summary>
-            /// <param name="direction">The XZ vector used to calculate a rotation angle</param>
+            /// <param name="direction">The direction vector used to calculate a rotation angle.</param>
             public void SetBaseFromVector(Vector3 direction)
             {
-                // Update any accumulated angle
+                // Update accumulated angle
                 m_AccumulatedAngle += m_CurrentOffset;
 
-                // Now set a new base angle
+                // Set a new base angle
                 m_BaseAngle = Mathf.Atan2(direction.z, direction.x) * Mathf.Rad2Deg;
                 m_CurrentOffset = 0.0f;
             }
 
+            /// <summary>
+            /// Sets the target rotation based on a direction vector and calculates the offset.
+            /// </summary>
+            /// <param name="direction">The direction vector used to calculate the target rotation.</param>
             public void SetTargetFromVector(Vector3 direction)
             {
-                // Set the target angle
+                // Calculate the target angle
                 var targetAngle = Mathf.Atan2(direction.z, direction.x) * Mathf.Rad2Deg;
 
-                // Return the offset
+                // Calculate and set the offset
                 m_CurrentOffset = ShortestAngleDistance(m_BaseAngle, targetAngle, 360.0f);
 
-                // If the offset is greater than 90 degrees, we update the base so we can rotate beyond 180 degrees
+                // If the offset is greater than 90 degrees, update the base angle
                 if (Mathf.Abs(m_CurrentOffset) > 90.0f)
                 {
                     m_BaseAngle = targetAngle;
@@ -82,55 +87,55 @@ namespace UnityEngine.XR.Content.Interaction
         public class ValueChangeEvent : UnityEvent<float> { }
 
         [SerializeField]
-        [Tooltip("The object that is visually grabbed and manipulated")]
-        Transform m_Handle = null;
+        [Tooltip("The object that is visually grabbed and manipulated.")]
+        Transform m_Handle = null; // The visual handle of the knob
 
         [SerializeField]
-        [Tooltip("The value of the knob")]
+        [Tooltip("The current value of the knob.")]
         [Range(0.0f, 1.0f)]
-        float m_Value = 0.5f;
+        float m_Value = 0.5f; // The value of the knob, ranging from 0 to 1
 
         [SerializeField]
-        [Tooltip("Whether this knob's rotation should be clamped by the angle limits")]
-        bool m_ClampedMotion = true;
+        [Tooltip("Whether the knob's rotation should be clamped by the angle limits.")]
+        bool m_ClampedMotion = true; // Whether to restrict knob rotation within defined limits
 
         [SerializeField]
-        [Tooltip("Rotation of the knob at value '1'")]
-        float m_MaxAngle = 90.0f;
+        [Tooltip("The maximum rotation angle of the knob at value '1'.")]
+        float m_MaxAngle = 90.0f; // The maximum rotation angle when the knob value is 1
 
         [SerializeField]
-        [Tooltip("Rotation of the knob at value '0'")]
-        float m_MinAngle = -90.0f;
+        [Tooltip("The minimum rotation angle of the knob at value '0'.")]
+        float m_MinAngle = -90.0f; // The minimum rotation angle when the knob value is 0
 
         [SerializeField]
-        [Tooltip("Angle increments to support, if greater than '0'")]
-        float m_AngleIncrement = 0.0f;
+        [Tooltip("Angle increments to support, if greater than '0'.")]
+        float m_AngleIncrement = 0.0f; // Angle increments for snapping the knob to discrete positions
 
         [SerializeField]
-        [Tooltip("The position of the interactor controls rotation when outside this radius")]
-        float m_PositionTrackedRadius = 0.1f;
+        [Tooltip("The position radius within which the interactor controls rotation.")]
+        float m_PositionTrackedRadius = 0.1f; // Radius around the handle where position affects rotation
 
         [SerializeField]
-        [Tooltip("How much controller rotation ")]
-        float m_TwistSensitivity = 1.5f;
+        [Tooltip("How sensitive the knob is to controller rotation.")]
+        float m_TwistSensitivity = 1.5f; // Sensitivity multiplier for rotation
 
         [SerializeField]
-        [Tooltip("Events to trigger when the knob is rotated")]
-        ValueChangeEvent m_OnValueChange = new ValueChangeEvent();
+        [Tooltip("Events triggered when the knob is rotated.")]
+        ValueChangeEvent m_OnValueChange = new ValueChangeEvent(); // Event for notifying knob value changes
 
-        IXRSelectInteractor m_Interactor;
+        IXRSelectInteractor m_Interactor; // The interactor interacting with the knob
 
-        bool m_PositionDriven = false;
-        bool m_UpVectorDriven = false;
+        bool m_PositionDriven = false; // Whether rotation is driven by position offset
+        bool m_UpVectorDriven = false; // Whether rotation is driven by the controller's up vector
 
-        TrackedRotation m_PositionAngles = new TrackedRotation();
-        TrackedRotation m_UpVectorAngles = new TrackedRotation();
-        TrackedRotation m_ForwardVectorAngles = new TrackedRotation();
+        TrackedRotation m_PositionAngles = new TrackedRotation(); // Tracked rotation based on position offset
+        TrackedRotation m_UpVectorAngles = new TrackedRotation(); // Tracked rotation based on the up vector
+        TrackedRotation m_ForwardVectorAngles = new TrackedRotation(); // Tracked rotation based on the forward vector
 
-        float m_BaseKnobRotation = 0.0f;
+        float m_BaseKnobRotation = 0.0f; // The base rotation of the knob
 
         /// <summary>
-        /// The object that is visually grabbed and manipulated
+        /// The object that is visually grabbed and manipulated.
         /// </summary>
         public Transform handle
         {
@@ -139,7 +144,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// The value of the knob
+        /// The current value of the knob.
         /// </summary>
         public float value
         {
@@ -152,7 +157,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// Whether this knob's rotation should be clamped by the angle limits
+        /// Whether the knob's rotation should be clamped by the angle limits.
         /// </summary>
         public bool clampedMotion
         {
@@ -161,7 +166,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// Rotation of the knob at value '1'
+        /// The maximum rotation angle of the knob at value '1'.
         /// </summary>
         public float maxAngle
         {
@@ -170,7 +175,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// Rotation of the knob at value '0'
+        /// The minimum rotation angle of the knob at value '0'.
         /// </summary>
         public float minAngle
         {
@@ -179,7 +184,7 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// The position of the interactor controls rotation when outside this radius
+        /// The position radius within which the interactor controls rotation.
         /// </summary>
         public float positionTrackedRadius
         {
@@ -188,12 +193,13 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// Events to trigger when the knob is rotated
+        /// Events triggered when the knob is rotated.
         /// </summary>
         public ValueChangeEvent onValueChange => m_OnValueChange;
 
-        void Start()
+        private void Start()
         {
+            // Initialize the knob value and rotation
             SetValue(m_Value);
             SetKnobRotation(ValueToRotation());
         }
@@ -201,30 +207,34 @@ namespace UnityEngine.XR.Content.Interaction
         protected override void OnEnable()
         {
             base.OnEnable();
+            // Add event listeners for knob interactions
             selectEntered.AddListener(StartGrab);
             selectExited.AddListener(EndGrab);
         }
 
         protected override void OnDisable()
         {
+            // Remove event listeners for knob interactions
             selectEntered.RemoveListener(StartGrab);
             selectExited.RemoveListener(EndGrab);
             base.OnDisable();
         }
 
-        void StartGrab(SelectEnterEventArgs args)
+        private void StartGrab(SelectEnterEventArgs args)
         {
             m_Interactor = args.interactorObject;
 
+            // Reset rotation tracking
             m_PositionAngles.Reset();
             m_UpVectorAngles.Reset();
             m_ForwardVectorAngles.Reset();
 
+            // Update the base rotation of the knob and start tracking rotation
             UpdateBaseKnobRotation();
             UpdateRotation(true);
         }
 
-        void EndGrab(SelectExitEventArgs args)
+        private void EndGrab(SelectExitEventArgs args)
         {
             m_Interactor = null;
         }
@@ -235,6 +245,7 @@ namespace UnityEngine.XR.Content.Interaction
 
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
             {
+                // Update rotation if the knob is selected
                 if (isSelected)
                 {
                     UpdateRotation();
@@ -242,13 +253,12 @@ namespace UnityEngine.XR.Content.Interaction
             }
         }
 
-        void UpdateRotation(bool freshCheck = false)
+        private void UpdateRotation(bool freshCheck = false)
         {
-            // Are we in position offset or direction rotation mode?
+            // Get the transform of the interactor
             var interactorTransform = m_Interactor.GetAttachTransform(this);
 
-            // We cache the three potential sources of rotation - the position offset, the forward vector of the controller, and up vector of the controller
-            // We store any data used for determining which rotation to use, then flatten the vectors to the local xz plane
+            // Calculate potential sources of rotation: position offset, forward vector, and up vector
             var localOffset = transform.InverseTransformVector(interactorTransform.position - m_Handle.position);
             localOffset.y = 0.0f;
             var radiusOffset = transform.TransformVector(localOffset).magnitude;
@@ -263,12 +273,10 @@ namespace UnityEngine.XR.Content.Interaction
             localUp.y = 0.0f;
             localUp.Normalize();
 
-
             if (m_PositionDriven && !freshCheck)
                 radiusOffset *= (1.0f + k_ModeSwitchDeadZone);
 
-            // Determine when a certain source of rotation won't contribute - in that case we bake in the offset it has applied
-            // and set a new anchor when they can contribute again
+            // Determine which rotation mode to use
             if (radiusOffset >= m_PositionTrackedRadius)
             {
                 if (!m_PositionDriven || freshCheck)
@@ -280,7 +288,6 @@ namespace UnityEngine.XR.Content.Interaction
             else
                 m_PositionDriven = false;
 
-            // If it's not a fresh check, then we weight the local Y up or down to keep it from flickering back and forth at boundaries
             if (!freshCheck)
             {
                 if (!m_UpVectorDriven)
@@ -306,7 +313,7 @@ namespace UnityEngine.XR.Content.Interaction
                 }
             }
 
-            // Get angle from position
+            // Apply the selected rotation mode
             if (m_PositionDriven)
                 m_PositionAngles.SetTargetFromVector(localOffset);
 
@@ -315,37 +322,41 @@ namespace UnityEngine.XR.Content.Interaction
             else
                 m_ForwardVectorAngles.SetTargetFromVector(localForward);
 
-            // Apply offset to base knob rotation to get new knob rotation
+            // Calculate and set the knob rotation
             var knobRotation = m_BaseKnobRotation - ((m_UpVectorAngles.totalOffset + m_ForwardVectorAngles.totalOffset) * m_TwistSensitivity) - m_PositionAngles.totalOffset;
 
-            // Clamp to range
+            // Clamp the rotation to the defined range
             if (m_ClampedMotion)
                 knobRotation = Mathf.Clamp(knobRotation, m_MinAngle, m_MaxAngle);
 
             SetKnobRotation(knobRotation);
 
-            // Reverse to get value
+            // Calculate and set the knob value
             var knobValue = (knobRotation - m_MinAngle) / (m_MaxAngle - m_MinAngle);
             SetValue(knobValue);
         }
 
-        void SetKnobRotation(float angle)
+        private void SetKnobRotation(float angle)
         {
+            // Snap to angle increments if specified
             if (m_AngleIncrement > 0)
             {
                 var normalizeAngle = angle - m_MinAngle;
                 angle = (Mathf.Round(normalizeAngle / m_AngleIncrement) * m_AngleIncrement) + m_MinAngle;
             }
 
+            // Apply the calculated rotation to the knob handle
             if (m_Handle != null)
                 m_Handle.localEulerAngles = new Vector3(0.0f, angle, 0.0f);
         }
 
-        void SetValue(float value)
+        private void SetValue(float value)
         {
+            // Clamp value to range if motion is clamped
             if (m_ClampedMotion)
                 value = Mathf.Clamp01(value);
 
+            // Snap value to angle increments if specified
             if (m_AngleIncrement > 0)
             {
                 var angleRange = m_MaxAngle - m_MinAngle;
@@ -354,21 +365,24 @@ namespace UnityEngine.XR.Content.Interaction
                 value = Mathf.InverseLerp(0.0f, angleRange, angle);
             }
 
+            // Set the value and invoke the change event
             m_Value = value;
             m_OnValueChange.Invoke(m_Value);
         }
 
-        float ValueToRotation()
+        private float ValueToRotation()
         {
+            // Convert the knob value to rotation angle
             return m_ClampedMotion ? Mathf.Lerp(m_MinAngle, m_MaxAngle, m_Value) : Mathf.LerpUnclamped(m_MinAngle, m_MaxAngle, m_Value);
         }
 
-        void UpdateBaseKnobRotation()
+        private void UpdateBaseKnobRotation()
         {
+            // Update the base rotation of the knob based on its value
             m_BaseKnobRotation = Mathf.LerpUnclamped(m_MinAngle, m_MaxAngle, m_Value);
         }
 
-        static float ShortestAngleDistance(float start, float end, float max)
+        private static float ShortestAngleDistance(float start, float end, float max)
         {
             var angleDelta = end - start;
             var angleSign = Mathf.Sign(angleDelta);
@@ -380,16 +394,15 @@ namespace UnityEngine.XR.Content.Interaction
             return angleDelta * angleSign;
         }
 
-        void OnDrawGizmosSelected()
+        private void OnDrawGizmosSelected()
         {
             const int k_CircleSegments = 16;
             const float k_SegmentRatio = 1.0f / k_CircleSegments;
 
-            // Nothing to do if position radius is too small
+            // Draw a circle to represent the position tracking radius
             if (m_PositionTrackedRadius <= Mathf.Epsilon)
                 return;
 
-            // Draw a circle from the handle point at size of position tracked radius
             var circleCenter = transform.position;
 
             if (m_Handle != null)
@@ -411,14 +424,17 @@ namespace UnityEngine.XR.Content.Interaction
             }
         }
 
-        void OnValidate()
+        private void OnValidate()
         {
+            // Ensure the value is clamped if motion is clamped
             if (m_ClampedMotion)
                 m_Value = Mathf.Clamp01(m_Value);
 
+            // Ensure minimum angle does not exceed maximum angle
             if (m_MinAngle > m_MaxAngle)
                 m_MinAngle = m_MaxAngle;
 
+            // Update the knob rotation based on the new values
             SetKnobRotation(ValueToRotation());
         }
     }

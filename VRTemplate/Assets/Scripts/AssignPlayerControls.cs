@@ -5,11 +5,12 @@ using UnityEngine.XR;
 public class AssignPlayerControls : MonoBehaviour
 {
     [Tooltip("The time it takes before the FPS controls get assigned if no XR device is detected.")]
-    [SerializeField] private float timeOutTime = 2f;
+    [SerializeField]
+    private float timeOutTime = 2f; // Duration to wait before spawning the FPS controller if no XR device is found
 
-    // Prefab for the First-Person Shooter (FPS) controller
     [Tooltip("Prefab that represents the FPS controller to be instantiated.")]
-    [SerializeField] private GameObject fpsControllerPrefab;
+    [SerializeField]
+    private GameObject fpsControllerPrefab; // Prefab for the First-Person Shooter (FPS) controller
 
     void Start()
     {
@@ -22,7 +23,7 @@ public class AssignPlayerControls : MonoBehaviour
         // Immediately check if an XR device is active
         if (XRSettings.isDeviceActive)
         {
-            yield break; // Exit the coroutine if XR device is already active
+            yield break; // Exit the coroutine if an XR device is already active
         }
 
         // Wait for the specified timeout duration if no XR device is detected
