@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8635799276583881121}
   - component: {fileID: 2328674508341084052}
   - component: {fileID: 1183210046774382185}
+  - component: {fileID: 925157856891057295}
   m_Layer: 0
   m_Name: Controller
   m_TagString: Untagged
@@ -86,5 +87,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384ac92f182b0cd46939c50fc15c00ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _fileName: 
   _title: PlaytestData
   _folderName: PlaytestData
+--- !u!114 &925157856891057295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3119880267702159816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83e4e6cca11330d4088d729ab4fc9d9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StartingHoverFilters: []
+  m_StartingSelectFilters: []
